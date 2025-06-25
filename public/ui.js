@@ -6,6 +6,7 @@ const elements = {
     uploadArea: document.getElementById('upload-area'),
     previewContainer: document.getElementById('preview-container'),
     previewImage: document.getElementById('preview-image'),
+    imagePreviewWrapper: document.getElementById('image-preview-wrapper'),
     resultContainer: document.getElementById('result-container'),
     imagePreview: document.getElementById('image-preview'),
     loading: document.getElementById('loading'),
@@ -17,7 +18,6 @@ const elements = {
     tryAgainBtn: document.getElementById('try-again'),
     themeToggle: document.getElementById('theme-toggle'),
     disclaimer: document.getElementById('disclaimer'),
-    imagePreviewContainerResult: document.getElementById('image-preview-container-result')
 };
 
 let popupOverlay = null;
@@ -54,6 +54,7 @@ export function showPreview(imageDataUrl) {
     elements.uploadArea.classList.add('hidden');
     elements.previewContainer.classList.remove('hidden');
     elements.resultContainer.classList.add('hidden');
+    elements.imagePreviewWrapper.classList.remove('drag-over');
 }
 
 export function showLoading(imageDataUrl) {
@@ -74,23 +75,17 @@ export function displayResult({ rating, verdict: verdictText, explanation: expla
     elements.result.classList.remove('hidden');
     
     const isSmash = verdictText === 'SMASH';
-    const isPass = verdictText === 'PASS';
-
     elements.verdict.textContent = `${getRatingLabel(rating)} (${rating}/10)`;
-    elements.verdictIcon.textContent = isSmash ? 'SMASH!!' : isPass ? 'PASS' : '...';
+    elements.verdictIcon.textContent = isSmash ? '👍' : '👎';
     elements.explanation.textContent = explanationText;
-
-    let resultClass = 'result';
-    if(isSmash) resultClass += ' smash';
-    if(isPass) resultClass += ' pass';
-    elements.result.className = resultClass;
+    elements.result.className = `result ${isSmash ? 'smash' : 'pass'}`;
 }
 
 export function displayError(errorMessage) {
     elements.loading.classList.add('hidden');
     elements.result.classList.remove('hidden');
     elements.verdict.textContent = '错误!';
-    elements.verdictIcon.textContent = 'ERROR';
+    elements.verdictIcon.textContent = '❌';
     elements.explanation.textContent = errorMessage;
     elements.result.className = 'result';
 }
@@ -110,11 +105,16 @@ export function hideDisclaimer() {
 
 // --- Theme Management ---
 export function toggleTheme() {
-    // This function is no longer needed as there is only one theme.
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    elements.themeToggle.textContent = isDarkMode ? '🌜' : '🌞';
+    store.setDarkModePreference(isDarkMode);
 }
 
 export function initializeTheme() {
-    // This function is no longer needed.
+    if (store.getDarkModePreference()) {
+        document.body.classList.add('dark-mode');
+        elements.themeToggle.textContent = '🌜';
+    }
 }
 
 // --- Dynamic Element Creation ---
@@ -158,6 +158,8 @@ export function createSavedResultsContainer(results, eventHandlers) {
             <div class="saved-result-card" data-index="${index}">
                 <img src="${result.image}" alt="Saved result ${index + 1}">
                 <div class="saved-result-info">
+                    <p class="verdict">${getRatingLabel(result.rating)} (${result.rating}/10)</p>
+                    <p class="explanation">${result.explanation}</p>
                     <p class="date">${new Date(result.timestamp).toLocaleDateString()}</p>
                     <p class="ai-type">模式: ${
                         result.aiType === 'brief' ? '简短' :
@@ -196,7 +198,6 @@ export function showPopup(result) {
     document.getElementById('popup-img').src = result.image;
     document.getElementById('popup-verdict').textContent = `${getRatingLabel(result.rating)} (${result.rating}/10)`;
     document.getElementById('popup-explanation').textContent = result.explanation;
-    document.getElementById('popup-explanation').style.whiteSpace = 'pre-wrap';
     popupOverlay.classList.add('visible');
 }
 

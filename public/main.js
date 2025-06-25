@@ -9,16 +9,16 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadArea: document.getElementById('upload-area'),
         fileInput: document.getElementById('file-input'),
         previewContainer: document.getElementById('preview-container'),
+        imagePreviewWrapper: document.getElementById('image-preview-wrapper'),
         startAnalysisBtn: document.getElementById('start-analysis-btn'),
-        changeImageBtn: document.getElementById('change-image-btn'),
+        clearSelectionBtn: document.getElementById('clear-selection-btn'),
         disclaimer: document.getElementById('disclaimer'),
         closeDisclaimerBtn: document.getElementById('close-disclaimer'),
+        themeToggle: document.getElementById('theme-toggle'),
         tryAgainBtn: document.getElementById('try-again'),
         viewSavedBtn: document.getElementById('view-saved'),
         container: document.querySelector('.container'),
         resultContainer: document.getElementById('result-container'),
-        imagePreviewContainerResult: document.getElementById('image-preview-container-result'),
-        imagePreviewContainer: document.querySelector('.image-preview-container')
     };
 
     let currentAnalysisResult = null;
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialization ---
     function initialize() {
         setupEventListeners();
+        ui.initializeTheme();
     }
 
     // --- Event Handlers ---
@@ -104,17 +105,19 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.showPopup(result);
     }
     
-    async function handleTryAgain() {
+    function handleTryAgain() {
         if (selectedImageDataUrl) {
-            await handleStartAnalysis();
+            handleStartAnalysis();
         } else {
+            // Fallback for safety if image data is lost
             ui.resetToUpload();
             currentAnalysisResult = null;
         }
     }
 
-    function handleChangeImage() {
-        elements.fileInput.click();
+    function handleClearSelection() {
+        ui.resetToUpload();
+        selectedImageDataUrl = null;
     }
     
     function toggleSavedResults() {
@@ -145,35 +148,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners Setup ---
     function setupEventListeners() {
-        const imageDropZones = [elements.uploadArea, elements.imagePreviewContainer, elements.imagePreviewContainerResult];
-        
-        imageDropZones.forEach(zone => {
-            if (zone) { // Add a check to ensure the element exists
-                zone.addEventListener('click', () => elements.fileInput.click());
-                zone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    zone.classList.add('drag-over');
-                });
-                zone.addEventListener('dragleave', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('drag-over');
-                });
-                zone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    zone.classList.remove('drag-over');
-                    if (e.dataTransfer.files.length) {
-                        elements.fileInput.files = e.dataTransfer.files;
-                        handleFileSelect();
-                    }
-                });
+        elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+        elements.fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag/drop on initial upload area
+        elements.uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.uploadArea.classList.add('drag-over');
+        });
+        elements.uploadArea.addEventListener('dragleave', () => elements.uploadArea.classList.remove('drag-over'));
+        elements.uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.uploadArea.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) {
+                elements.fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
             }
         });
 
-        elements.fileInput.addEventListener('change', handleFileSelect);
-        
+        // Click/drag/drop on preview image to replace
+        elements.imagePreviewWrapper.addEventListener('click', () => elements.fileInput.click());
+        elements.imagePreviewWrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.imagePreviewWrapper.classList.add('drag-over');
+        });
+        elements.imagePreviewWrapper.addEventListener('dragleave', () => {
+            elements.imagePreviewWrapper.classList.remove('drag-over');
+        });
+        elements.imagePreviewWrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.imagePreviewWrapper.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) {
+                elements.fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
         elements.startAnalysisBtn.addEventListener('click', handleStartAnalysis);
-        elements.changeImageBtn.addEventListener('click', handleChangeImage);
+        elements.clearSelectionBtn.addEventListener('click', handleClearSelection);
         elements.closeDisclaimerBtn.addEventListener('click', () => ui.hideDisclaimer());
+        elements.themeToggle.addEventListener('click', ui.toggleTheme);
         elements.tryAgainBtn.addEventListener('click', handleTryAgain);
         elements.viewSavedBtn.addEventListener('click', toggleSavedResults);
     }

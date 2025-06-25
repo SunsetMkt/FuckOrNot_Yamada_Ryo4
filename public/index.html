@@ -5,11 +5,10 @@
     <title>上不上AI评分系统</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="scanline-overlay"></div>
     <div class="container">
         <button id="theme-toggle" class="theme-toggle" aria-label="切换暗色模式">🌞</button>
         <header>
@@ -55,21 +54,18 @@
         </div>
 
         <div class="preview-container hidden" id="preview-container">
-             <div class="image-preview-container">
+             <div class="image-preview-container" id="image-preview-wrapper" title="点击或拖拽新图片以替换">
                 <img id="preview-image" src="" alt="待分析的图片">
             </div>
             <div class="preview-actions">
                 <button id="start-analysis-btn" class="btn">🚀 获取AI评分</button>
-                <button id="change-image-btn" class="btn btn-secondary">🔁 换张图</button>
+                <button id="clear-selection-btn" class="btn btn-secondary">🗑️ 清除</button>
             </div>
         </div>
 
         <div class="result-container hidden" id="result-container">
-            <div class="image-preview-container-result" id="image-preview-container-result">
+            <div class="image-preview-container">
                 <img id="image-preview" src="" alt="上传的图片">
-                <div class="image-overlay">
-                    <p>点击或拖拽以替换图片</p>
-                </div>
             </div>
             <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
